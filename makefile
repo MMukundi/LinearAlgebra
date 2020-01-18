@@ -9,10 +9,10 @@ ObjectFiles/%.o: %.cpp LinAlg.h
 
 LinAlg.h: Vector.h Space.h
 
-LinAlg: LinAlg.h
+LinAlg.h.gch: LinAlg.h
 	$(CC) -c -o LinAlg.h.gch LinAlg.h
 
-Main: LinAlg
+Main: LinAlg.h.gch
 	$(CC) main.cpp -o Main
 
 

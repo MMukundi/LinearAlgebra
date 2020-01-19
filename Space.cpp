@@ -1,4 +1,4 @@
-#include "LinAlg.h"
+#include "LinAlg.hpp"
 #include "Set.h"
 
 namespace LinearAlgebra
@@ -9,6 +9,6 @@ std::string Space<D>::toString(){
     std::string s;
     for(auto b: basis.vectors) s+=b.toString();
     return s;
-}
+} 
 
 } // namespace LinearAlgebra

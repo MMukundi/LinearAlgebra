@@ -47,7 +47,7 @@ Vector<D> Vector<D>::multiply(Vector<D> &v_, NumericalType s)
 };
 
 template <int Dimensions>
-Vector<Dimensions> Vector<Dimensions>::clone()
+Vector<Dimensions> Vector<Dimensions>::clone() const
 {
     Vector v = Vector();
     int size = sizeof(NumericalType) * dimensions;
@@ -58,42 +58,7 @@ Vector<Dimensions> Vector<Dimensions>::clone()
 };
 
 template <int Dimensions>
-bool Vector<Dimensions>::areLinearlyIndependent(Vector<Dimensions> &v)
-{
-    if (v.dimensions != dimensions)
-        return false;
-
-    NumericalType scalar;
-    int d = 0;
-    for (; d < dimensions; d++)
-    {
-        if (components[d] == 0)
-        {
-            if (v.components[d] == 0 && d == dimensions - 1)
-                return false;
-        }
-        else
-        {
-            scalar = v.components[d] / components[d];
-            break;
-        }
-    }
-
-    for (d++; d < dimensions; d++)
-    {
-        if (components[d] == 0)
-        {
-            if (v.components[d] != 0)
-                return false;
-        }
-        else if (scalar * components[d] != v.components[d])
-            return false;
-    }
-    return true;
-}
-
-template <int Dimensions>
-std::string Vector<Dimensions>::toString()
+std::string Vector<Dimensions>::toString() const
 {
     if (dimensions == 0)
         return "[]";
@@ -111,26 +76,76 @@ std::string Vector<Dimensions>::toString()
 }
 
 template <int Dimensions>
-Space<Dimensions> &Vector<Dimensions>::spanOf(std::initializer_list<Vector> v)
+bool areLinearlyDependent(Vector<Dimensions> vectors[])
 {
-    std::vector<LinearAlgebra::Vector<Dimensions>> list;
-    int i = 0;
-    for (auto a : v)
+
+
+    auto a = vectors[0];
+    auto b = vectors[1];
+    float scalar;
+    if (a.dimensions!=b.dimensions)
+        return false;
+    int d = 0;
+    for (; d < Dimensions; d++)
     {
-        bool k = true;
-        for (auto other : v)
+        if (a.components[d] == 0)
         {
-            if (&a != &other)
-                if(!a.areLinearlyIndependent(other))
-                    k = false;
+            if (b.components[d] == 0 && d == Dimensions - 1)
+                return false;
         }
-        if (k)
+        else
         {
-            list.at(i++)=a;
+            scalar = b.components[d] / a.components[d];
+            break;
         }
+    }
+
+    for (d++; d < Dimensions; d++)
+    {
+        if (a.components[d] == 0)
+        {
+            if (b.components[d] != 0)
+                return false;
+        }
+        else if (scalar * a.components[d] != b.components[d])
+        {
+            printf("%f * %f != %f\n",scalar, a.components[d], b.components[d]);
+            return false;
+        }
+    }
+    return true;
+}
+
+template <int Dimensions>
+Space<Dimensions> &spanOf(Vector<Dimensions> v[])
+{
+    std::list<LinearAlgebra::Vector<Dimensions>> list;
+
+    int i = 0;
+
+    auto curr = 0;
+    auto other = 1;
+
+    bool valid = true;
+    for (;curr<Dimensions; curr++)
+    {
+        valid = true;
+        for (other = curr; other <Dimensions; other++)
+        {
+            if (areLinearlyDependent({*v[curr],*v[other]}))
+            {
+                printf("%s and %s are linearly dependent", (*v[curr]).toString().c_str(), (*v[other]).toString().c_str());
+                valid = false;
+            }
+        }
+        if (!valid)
+            break;
+
+        printf("%s", (v[curr])->toString().c_str());
+        list.push_back(*v[curr]);
     };
-    constexpr auto size = 4;
-    return *new Space<std::size(list)>(Basis<std::size(list)>(list));
+    //constexpr auto size = 4;
+    return *new Space<Dimensions>(Basis<Dimensions>(list));
 }
 
 } //namespace LinearAlgebra

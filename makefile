@@ -1,16 +1,11 @@
-CC = g++ -std=c++17 -ggdb
+CC = g++ -std=c++17 -ggdb -g
 
-source := $(wildcard *.cpp)
+sourceFiles := $(wildcard *.cpp)
 
-objects := $(patsubst %.cpp,ObjectFiles/%.o,$(source))
+headerFiles := $(wildcard *.h)
 
-ObjectFiles/%.o: %.cpp LinAlg.h
-	$(CC) $< -c -o $@
-
-LinAlg.h: Vector.h Space.h
-
-LinAlg.h.gch: LinAlg.h
-	$(CC) -c -o LinAlg.h.gch LinAlg.h
+LinAlg.h.gch: $(headerFiles) $(sourceFiles)
+	$(CC) -c -o LinAlg.h.gch LinAlg.hpp
 
 Main: LinAlg.h.gch
 	$(CC) main.cpp -o Main

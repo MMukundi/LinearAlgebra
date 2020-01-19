@@ -17,7 +17,7 @@ public:
     static const int PRIME = 2 ^ 17 - 1;
     static inline const std::function<int(Pointer)> BASIC_HASH = [](Pointer t) { return (uint64_t)t ^ (PRIME); };
 
-    std::function<int(Pointer)> hash;
+    std::function<int(Pointer)> hash = BASIC_HASH;
     std::function<int(int)> toIndex = [this](int h) {
         return h % this->LOAD;
     };
@@ -27,12 +27,26 @@ public:
     {
         data = (SetLinkedNode **)malloc(sizeof(SetLinkedNode *) * s);
     };
+    Set(std::initializer_list<T *> ts)
+    {
+        data = (SetLinkedNode **)malloc(sizeof(SetLinkedNode *) * ts.size());
+        for (auto t : ts)
+        {
+            add(t);
+        }
+    };
 
     bool add(Pointer t)
     {
         int index = toIndex(hash(t));
-        SetLinkedNode *node = data[index];
-        until(node->next == nullptr)
+        SetLinkedNode* node = data[index];
+        if (node == nullptr)
+        {
+            data[index] = new SetLinkedNode;
+            data[index]->value = t;
+            return false;
+        }
+        while(node->next != nullptr)
         {
             if (equality(node->value, t))
                 return true;
@@ -62,20 +76,22 @@ public:
     std::list<ValueType> toArray()
     {
         std::list<ValueType> arr;
-        for (auto a : this)
+        for (auto a : *this)
         {
-            arr.add(a);
+            arr.push_back(a);
         }
+        return arr;
     }
     class SetIterator
     {
+    public:
         int bucket;
         int pos;
         Set<T> *data;
         SetIterator(int b, int p, Set<T> *d) : bucket(b), pos(p), data(d) {}
         SetIterator *operator++()
         {
-            if (data->data[bucket][pos]->next == nullptr)
+            if (data->data[bucket]->get(pos)->next == nullptr)
             {
                 if (bucket + 1 < data->size)
                 {
@@ -89,28 +105,39 @@ public:
         }
         Pointer operator*()
         {
-            return data->data[bucket][pos]->value;
+            return data->data[bucket]->get(pos)->value;
         }
-        Pointer operator==(SetIterator &t)
+        bool operator!=(SetIterator t)
         {
-            return bucket == t.bucket && pos == t.pos;
+            return !(bucket == t.bucket && pos == t.pos);
         }
     };
     SetIterator begin() { return SetIterator(0, 0, this); }
     SetIterator end()
     {
         int p = 0;
-        while (data[size - 1][p]->next != nullptr)
+        while (data[size - 1]->get(p)->next != nullptr)
             p++;
         return SetIterator(size - 1, p, this);
     }
 
-private:
-    int LOAD;
-    struct SetLinkedNode
+    class SetLinkedNode
     {
+        public:
         Pointer value;
-        SetLinkedNode *next = nullptr;
-    } * *data;
+        SetLinkedNode* next = nullptr;
+        SetLinkedNode* get (int n){
+            SetLinkedNode* curr = this;
+            until(n==0){
+                if(this->next ==nullptr)throw std::runtime_error("NOP");
+                curr = this->next;
+                n--;
+            }
+            return curr;
+        }
+    } **data;
+
+private:
+    int LOAD = 10;
 };
 #endif

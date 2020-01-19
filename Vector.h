@@ -13,16 +13,15 @@ namespace LinearAlgebra
 {
 /** A Vector in n-dimentional space, a space with n perpendicular axes, represented by a direction and a magnitude
  */
-template<int Dimensions>
+template <int Dimensions>
 class Space;
 
-
-template<int Dimensions>
+template <int Dimensions>
 class Vector
 {
-    typedef double NumericalType;
 
 public:
+typedef  double NumericalType;
     /** Returns a Vector with the provided list as the components of the vector
     */
     Vector(std::initializer_list<NumericalType> l);
@@ -56,19 +55,16 @@ public:
 
     /** Makes this vector the sum of this Vector and another Vector [associative and communicative]
      */
-    bool areLinearlyIndependent(Vector &v);
 
     /** Returns an exact copy of this Vector
      */
-    Vector clone();
+    Vector clone() const;
     /** Returns a text representation of this Vector
      */
-    std::string toString();
+    std::string toString() const;
 
     /***/
-    static const Vector *ORIGIN;
-
-    static Space<Dimensions> &spanOf(std::initializer_list<Vector> v);
+    static Vector *ORIGIN;
 
     /** Returns the sum of the vector and another vector [associative and communicative]
      */
@@ -87,6 +83,11 @@ public:
         return multiply(*this, s);
     }
 };
+
+template <int Dimensions>
+bool areLinearlyDependent(Vector<Dimensions> vectors []);
+template <int Dimensions>
+Space<Dimensions> &spanOf(Vector<Dimensions> v []);
 } // namespace LinearAlgebra
 #include "Space.h"
 #include "Vector.cpp"
